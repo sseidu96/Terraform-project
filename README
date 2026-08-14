@@ -1,0 +1,379 @@
+# Terraform AWS Lightsail Apache Deployment
+
+## Overview
+
+This project uses **Terraform** to provision an **AWS Lightsail Ubuntu server** and configure an Apache web server using Terraform `user_data`.
+
+The server automatically:
+
+* Creates an AWS Lightsail instance
+* Uses Ubuntu 24.04
+* Installs Apache2
+* Starts and enables Apache2
+* Creates a custom HTML web page
+* Outputs important server information such as the public IP address
+
+## Architecture
+
+```text
+Terraform
+    |
+    v
+AWS Lightsail
+    |
+    v
+Ubuntu 24.04
+    |
+    v
+Apache2
+    |
+    v
+Custom Web Page
+```
+
+## Prerequisites
+
+Before running this project, make sure you have:
+
+* AWS account
+* AWS CLI installed
+* Terraform installed
+* AWS credentials configured
+* Git installed
+
+Verify Terraform:
+
+```bash
+terraform version
+```
+
+Verify AWS CLI:
+
+```bash
+aws --version
+```
+
+Check your AWS credentials:
+
+```bash
+aws sts get-caller-identity
+```
+
+## Project Structure
+
+```text
+Terraform-Lab/
+│
+├── main.tf
+├── outputs.tf
+├── variables.tf
+├── .gitignore
+└── README.md
+```
+
+## Terraform Configuration
+
+Example `main.tf`:
+
+```hcl
+resource "aws_lightsail_instance" "Test-Sever1" {
+  name              = "Server1"
+  availability_zone = "us-east-1a"
+  blueprint_id      = "ubuntu_24_04"
+  bundle_id         = "nano_3_0"
+
+  user_data = <<-EOF
+    #!/bin/bash
+    apt-get update
+    apt-get install -y apache2
+    systemctl start apache2
+    systemctl enable apache2
+    echo '<h1>This is deployed by Safiatu Seidu</h1>' > /var/www/html/index.html
+  EOF
+}
+```
+
+## Initialize Terraform
+
+Initialize the Terraform working directory:
+
+```bash
+terraform init
+```
+
+## Format the Code
+
+```bash
+terraform fmt
+```
+
+## Validate the Configuration
+
+```bash
+terraform validate
+```
+
+A successful validation should return:
+
+```text
+Success! The configuration is valid.
+```
+
+## Review the Deployment Plan
+
+```bash
+terraform plan
+```
+
+Review the resources Terraform plans to create before proceeding.
+
+## Deploy the Infrastructure
+
+Apply the Terraform configuration:
+
+```bash
+terraform apply
+```
+
+Or automatically approve:
+
+```bash
+terraform apply --auto-approve
+```
+
+## Terraform Outputs
+
+Example `outputs.tf`:
+
+```hcl
+output "availability_zone" {
+  value = aws_lightsail_instance.Test-Sever1.availability_zone
+}
+
+output "cpu_count" {
+  value = aws_lightsail_instance.Test-Sever1.cpu_count
+}
+
+output "private_ip_address" {
+  value = aws_lightsail_instance.Test-Sever1.private_ip_address
+}
+
+output "public_ip_address" {
+  value = aws_lightsail_instance.Test-Sever1.public_ip_address
+}
+
+output "key_pair_name" {
+  value = aws_lightsail_instance.Test-Sever1.key_pair_name
+}
+```
+
+Display the outputs:
+
+```bash
+terraform output
+```
+
+To display only the public IP:
+
+```bash
+terraform output public_ip_address
+```
+
+## Verify Apache
+
+SSH into the Lightsail instance and check Apache:
+
+```bash
+systemctl status apache2
+```
+
+Check the Apache process:
+
+```bash
+ps aux | grep '[a]pache2'
+```
+
+Check whether Apache is listening on port 80:
+
+```bash
+ss -tulpn | grep :80
+```
+
+Test Apache locally:
+
+```bash
+curl http://localhost
+```
+
+Expected output:
+
+```html
+<h1>This is deployed by Safiatu Seidu</h1>
+```
+
+## Access the Website
+
+Get the public IP:
+
+```bash
+terraform output public_ip_address
+```
+
+Open the following in a browser:
+
+```text
+http://PUBLIC_IP_ADDRESS
+```
+
+The page should display:
+
+```text
+This is deployed by Safiatu Seidu
+```
+
+## Troubleshooting
+
+### Apache is not installed
+
+Check:
+
+```bash
+apache2 -v
+```
+
+Install Apache manually if necessary:
+
+```bash
+apt update
+apt install -y apache2
+systemctl enable --now apache2
+```
+
+### Apache is not running
+
+Check:
+
+```bash
+systemctl status apache2
+```
+
+Start it:
+
+```bash
+systemctl start apache2
+```
+
+### Check Apache logs
+
+```bash
+journalctl -u apache2 --no-pager
+```
+
+Apache error log:
+
+```bash
+cat /var/log/apache2/error.log
+```
+
+### Website is not accessible
+
+Check whether port 80 is listening:
+
+```bash
+ss -tulpn | grep :80
+```
+
+Also verify that **TCP port 80 is allowed in the AWS Lightsail firewall**.
+
+## Destroy the Infrastructure
+
+When you are finished with the lab:
+
+```bash
+terraform destroy
+```
+
+Automatically approve:
+
+```bash
+terraform destroy --auto-approve
+```
+
+**Warning:** This permanently removes the Terraform-managed Lightsail resources.
+
+## Git Commands
+
+Initialize Git:
+
+```bash
+git init
+```
+
+Check the repository:
+
+```bash
+git status
+```
+
+Add files:
+
+```bash
+git add .
+```
+
+Commit:
+
+```bash
+git commit -m "Deploy Apache server with Terraform"
+```
+
+Push to GitHub:
+
+```bash
+git push origin master
+```
+
+## .gitignore
+
+Recommended `.gitignore`:
+
+```gitignore
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+```
+
+## Skills Demonstrated
+
+This project demonstrates experience with:
+
+* Terraform
+* Infrastructure as Code (IaC)
+* AWS Lightsail
+* Ubuntu Linux
+* Apache Web Server
+* Terraform `user_data`
+* AWS CLI
+* Linux system administration
+* Bash scripting
+* Git and GitHub
+* Terraform outputs
+* Terraform state management
+* Troubleshooting Linux services
+
+## Author
+
+**Safiatu Seidu**
+
+Linux System Administrator
+
+Technologies: Terraform | AWS | Linux | Bash | Apache | Git
