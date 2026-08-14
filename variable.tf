@@ -5,7 +5,7 @@ variable "instance_name" {
 
 variable "availability_zone" {
   type    = string
-  default = "us-east-1b"
+  default = "us-east-1a"
 }
 
 variable "blueprint_id" {
